@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'edit' %}Modifier véhicule{% else %}Nouveau véhicule{% endif %}{% endblock %}
+{% block page_title %}{% if action == 'edit' %}Modifier véhicule{% else %}Nouveau véhicule{% endif %}{% endblock %}
+{% block breadcrumb %}Véhicules → {% if action == 'edit' %}Modification{% else %}Création{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel animate-in" style="max-width: 600px; margin: 0 auto;">
+    <div class="panel-header">
+        <h2 class="panel-title">
+            {% if action == 'edit' %}Modifier — {{ vehicle.matricule }}
+            {% else %}Nouveau véhicule{% endif %}
+        </h2>
+    </div>
+    <div style="padding: 24px;">
+        <form method="POST">
+
+            <div class="form-group">
+                <label class="form-label">Matricule</label>
+                <input type="text" name="matricule" class="form-control"
+                       value="{{ data.get('matricule', '') }}" placeholder="EX: 123-456-07" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Propriétaire</label>
+                <select name="user_id" class="form-control">
+                    <option value="">— Sans propriétaire —</option>
+                    {% for user in users %}
+                    <option value="{{ user._id }}"
+                        {% if data.get('user_id') and data.get('user_id')|string == user._id|string %}selected{% endif %}>
+                        {{ user.prenom }} {{ user.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label">Marque</label>
+                    <input type="text" name="marque" class="form-control"
+                           value="{{ data.get('marque', '') }}" placeholder="Toyota">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Modèle</label>
+                    <input type="text" name="modele" class="form-control"
+                           value="{{ data.get('modele', '') }}" placeholder="Corolla">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Couleur</label>
+                <input type="text" name="couleur" class="form-control"
+                       value="{{ data.get('couleur', '') }}" placeholder="Blanc">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <button type="submit" class="btn btn-primary">
+                    {% if action == 'edit' %}Enregistrer les modifications{% else %}Ajouter le véhicule{% endif %}
+                </button>
+                <a href="{{ url_for('vehicles.index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

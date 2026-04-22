@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartParking — Connexion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-base);
+        }
+
+        .login-wrap {
+            width: 100%;
+            max-width: 400px;
+            padding: 16px;
+        }
+
+        .login-brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-brand-icon {
+            width: 52px; height: 52px;
+            background: var(--accent-blue);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+            color: #fff;
+        }
+
+        .login-brand-name {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: block;
+        }
+
+        .login-brand-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .login-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+        }
+
+        .login-title {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrap animate-in">
+
+    <div class="login-brand">
+        <div class="login-brand-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M9 3v18M15 9h3M15 12h3M15 15h3"/>
+            </svg>
+        </div>
+        <span class="login-brand-name">SmartParking</span>
+        <span class="login-brand-sub">Système d'accès — Administration</span>
+    </div>
+
+    <div class="login-card">
+        <p class="login-title">Connexion administrateur</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 16px;">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Nom d'utilisateur</label>
+                <input type="text" name="username" class="form-control"
+                       placeholder="admin" autofocus required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mot de passe</label>
+                <input type="password" name="password" class="form-control"
+                       placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">
+                Se connecter
+            </button>
+        </form>
+    </div>
+
+    <p class="login-footer">SmartParking v1.0 — ESI-SBA</p>
+</div>
+
+<script>
+// Auto dismiss alerts
+document.querySelectorAll('.alert').forEach(el => {
+    setTimeout(() => {
+        el.style.transition = 'opacity 0.5s ease';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+    }, 3500);
+});
+</script>
+
+</body>
+</html>

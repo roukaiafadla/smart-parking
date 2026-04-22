@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb %}Vue d'ensemble du système{% endblock %}
+
+{% block content %}
+
+<!-- STATS GRID -->
+<div class="stats-grid">
+
+    <div class="stat-card stat-card--blue animate-in" style="--delay: 0ms">
+        <div class="stat-card-header">
+            <span class="stat-label">Clients actifs</span>
+            <div class="stat-icon stat-icon--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" data-target="{{ stats.total_users }}">0</div>
+        <div class="stat-footer">
+            <span class="stat-change positive">+{{ stats.new_users_this_month }} ce mois</span>
+        </div>
+    </div>
+
+    <div class="stat-card stat-card--green animate-in" style="--delay: 80ms">
+        <div class="stat-card-header">
+            <span class="stat-label">Tags RFID actifs</span>
+            <div class="stat-icon stat-icon--green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" data-target="{{ stats.active_tags }}">0</div>
+        <div class="stat-footer">
+            <span class="stat-sub">{{ stats.total_tags }} tags au total</span>
+        </div>
+    </div>
+
+    <div class="stat-card stat-card--orange animate-in" style="--delay: 160ms">
+        <div class="stat-card-header">
+            <span class="stat-label">Véhicules enregistrés</span>
+            <div class="stat-icon stat-icon--orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13" rx="2"/>
+                    <path d="M16 8h4l3 3v5h-7V8z"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" data-target="{{ stats.total_vehicles }}">0</div>
+        <div class="stat-footer">
+            <span class="stat-sub">base de données</span>
+        </div>
+    </div>
+
+    <div class="stat-card stat-card--red animate-in" style="--delay: 240ms">
+        <div class="stat-card-header">
+            <span class="stat-label">Tags inactifs / perdus</span>
+            <div class="stat-icon stat-icon--red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value" data-target="{{ stats.inactive_tags }}">0</div>
+        <div class="stat-footer">
+            <span class="stat-change negative">nécessitent attention</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- MAIN PANELS -->
+<div class="panels-grid">
+
+    <!-- RECENT USERS TABLE -->
+    <div class="panel animate-in" style="--delay: 300ms">
+        <div class="panel-header">
+            <div>
+                <h2 class="panel-title">Clients récents</h2>
+                <p class="panel-sub">Les {{ recent_users|length }} derniers inscrits</p>
+            </div>
+            <a href="{{ url_for('users.index') }}" class="panel-action">Voir tout →</a>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nom complet</th>
+                        <th>Email</th>
+                        <th>Tag RFID</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recent_users %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-sm">{{ user.prenom[0] }}{{ user.nom[0] }}</div>
+                                <span>{{ user.prenom }} {{ user.nom }}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">{{ user.email }}</td>
+                        <td><code class="tag-code">{{ user.id_tag }}</code></td>
+                        <td>
+                            <span class="badge {% if user.etat == 'actif' %}badge-success{% else %}badge-danger{% endif %}">
+                                {{ user.etat }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="empty-row">Aucun client enregistré</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+
+        <!-- TAG STATUS DONUT -->
+        <div class="panel animate-in" style="--delay: 380ms">
+            <div class="panel-header">
+                <h2 class="panel-title">État des Tags</h2>
+            </div>
+            <div class="donut-wrap">
+                <svg class="donut-chart" viewBox="0 0 100 100" width="140" height="140">
+                    <!-- Background circle -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#1e2538" stroke-width="14"/>
+                    <!-- Active segment -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#3ecf8e" stroke-width="14"
+                        stroke-dasharray="{{ donut.active_dash }} {{ donut.rest_dash }}"
+                        stroke-dashoffset="25"
+                        stroke-linecap="round"
+                        style="transition: stroke-dasharray 1s ease"/>
+                    <!-- Inactive segment -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#f97316" stroke-width="14"
+                        stroke-dasharray="{{ donut.inactive_dash }} {{ donut.rest_dash2 }}"
+                        stroke-dashoffset="{{ donut.inactive_offset }}"
+                        stroke-linecap="round"/>
+                    <text x="50" y="46" text-anchor="middle" class="donut-num">{{ stats.total_tags }}</text>
+                    <text x="50" y="57" text-anchor="middle" class="donut-label-center">tags</text>
+                </svg>
+                <div class="donut-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#3ecf8e"></span>
+                        <span>Actifs — {{ stats.active_tags }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#f97316"></span>
+                        <span>Inactifs — {{ stats.inactive_tags }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#334155"></span>
+                        <span>Non affectés — {{ stats.unassigned_tags }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="panel animate-in" style="--delay: 460ms">
+            <div class="panel-header">
+                <h2 class="panel-title">Actions rapides</h2>
+            </div>
+            <div class="quick-actions">
+                <a href="{{ url_for('users.create') }}" class="quick-btn quick-btn--primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Nouveau client
+                </a>
+                <a href="{{ url_for('vehicles.create') }}" class="quick-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Nouveau véhicule
+                </a>
+                <a href="{{ url_for('tags.create') }}" class="quick-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Nouveau tag RFID
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

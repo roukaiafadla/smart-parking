@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Accès en direct{% endblock %}
+{% block page_title %}Accès en direct{% endblock %}
+{% block breadcrumb %}Historique des entrées / sorties{% endblock %}
+
+{% block content %}
+<div class="panel animate-in">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">Journal d'accès</h2>
+            <p class="panel-sub">Les 50 derniers événements</p>
+        </div>
+        <span class="badge-live" style="padding: 4px 10px; font-size:0.7rem;">LIVE</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date / Heure</th>
+                    <th>Client</th>
+                    <th>Tag RFID</th>
+                    <th>Matricule</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>
+                        <span style="font-family:var(--font-mono); font-size:0.78rem; color:var(--text-muted);">
+                            {{ log.timestamp.strftime('%d/%m/%Y %H:%M') }}
+                        </span>
+                    </td>
+                    <td>{{ log.nom }}</td>
+                    <td><code class="tag-code">{{ log.id_tag }}</code></td>
+                    <td><code class="tag-code">{{ log.matricule }}</code></td>
+                    <td>
+                        <span class="badge {% if log.type == 'entree' %}badge-success{% else %}badge-warning{% endif %}">
+                            {% if log.type == 'entree' %}↓ Entrée{% else %}↑ Sortie{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if log.statut == 'autorisé' %}badge-success{% else %}badge-danger{% endif %}">
+                            {{ log.statut }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="empty-row">Aucun accès enregistré</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

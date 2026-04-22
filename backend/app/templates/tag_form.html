@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'edit' %}Modifier tag{% else %}Nouveau tag{% endif %}{% endblock %}
+{% block page_title %}{% if action == 'edit' %}Modifier tag{% else %}Nouveau tag{% endif %}{% endblock %}
+{% block breadcrumb %}Tags RFID → {% if action == 'edit' %}Modification{% else %}Création{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel animate-in" style="max-width: 600px; margin: 0 auto;">
+    <div class="panel-header">
+        <h2 class="panel-title">
+            {% if action == 'edit' %}Modifier — {{ tag.id_tag }}
+            {% else %}Nouveau tag RFID{% endif %}
+        </h2>
+    </div>
+    <div style="padding: 24px;">
+        <form method="POST">
+
+            <div class="form-group">
+                <label class="form-label">Identifiant du tag</label>
+                <input type="text" name="id_tag" class="form-control"
+                       value="{{ data.get('id_tag', '') }}" placeholder="TAG_XXX" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Affecter à un client</label>
+                <select name="user_id" class="form-control">
+                    <option value="">— Non affecté —</option>
+                    {% for user in users %}
+                    <option value="{{ user._id }}"
+                        {% if data.get('user_id') and data.get('user_id')|string == user._id|string %}selected{% endif %}>
+                        {{ user.prenom }} {{ user.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Statut</label>
+                <select name="etat" class="form-control">
+                    <option value="actif"      {% if data.get('etat') == 'actif'      %}selected{% endif %}>Actif</option>
+                    <option value="perdu"      {% if data.get('etat') == 'perdu'      %}selected{% endif %}>Perdu</option>
+                    <option value="désactivé"  {% if data.get('etat') == 'désactivé'  %}selected{% endif %}>Désactivé</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <button type="submit" class="btn btn-primary">
+                    {% if action == 'edit' %}Enregistrer les modifications{% else %}Créer le tag{% endif %}
+                </button>
+                <a href="{{ url_for('tags.index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -5,24 +5,26 @@ from bson import ObjectId
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
-@login_required
+
 @users_bp.route('/')
+@login_required
 def index():
     users = list(db.users.find())
     return render_template('users.html', users=users)
 
-@login_required
+
 @users_bp.route('/create', methods=['GET', 'POST'])
+@login_required
 def create():
     if request.method == 'POST':
-        nom            = request.form.get('nom', '').strip()
-        prenom         = request.form.get('prenom', '').strip()
-        email          = request.form.get('email', '').strip()
-        num_telephone  = request.form.get('num_telephone', '').strip()
-        id_tag         = request.form.get('id_tag', '').strip().upper()
-        etat           = request.form.get('etat', 'actif')
+        nom           = request.form.get('nom', '').strip()
+        prenom        = request.form.get('prenom', '').strip()
+        email         = request.form.get('email', '').strip()
+        num_telephone = request.form.get('num_telephone', '').strip()
+        id_tag        = request.form.get('id_tag', '').strip().upper()
+        id_tag        = ' '.join(id_tag.split())  # normalise les espaces
+        etat          = request.form.get('etat', 'actif')
 
-        # Validation
         if not all([nom, prenom, email, num_telephone, id_tag]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='create', data=request.form)
@@ -48,8 +50,9 @@ def create():
 
     return render_template('user_form.html', action='create', data={})
 
-@login_required
+
 @users_bp.route('/edit/<id>', methods=['GET', 'POST'])
+@login_required
 def edit(id):
     user = db.users.find_one({'_id': ObjectId(id)})
     if not user:
@@ -57,24 +60,23 @@ def edit(id):
         return redirect(url_for('users.index'))
 
     if request.method == 'POST':
-        nom            = request.form.get('nom', '').strip()
-        prenom         = request.form.get('prenom', '').strip()
-        email          = request.form.get('email', '').strip()
-        num_telephone  = request.form.get('num_telephone', '').strip()
-        id_tag         = request.form.get('id_tag', '').strip().upper()
-        etat           = request.form.get('etat', 'actif')
+        nom           = request.form.get('nom', '').strip()
+        prenom        = request.form.get('prenom', '').strip()
+        email         = request.form.get('email', '').strip()
+        num_telephone = request.form.get('num_telephone', '').strip()
+        id_tag        = request.form.get('id_tag', '').strip().upper()
+        id_tag        = ' '.join(id_tag.split())  # normalise les espaces
+        etat          = request.form.get('etat', 'actif')
 
         if not all([nom, prenom, email, num_telephone, id_tag]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='edit', data=request.form, user=user)
 
-        # Vérif unicité email (exclure le doc actuel)
         existing_email = db.users.find_one({'email': email, '_id': {'$ne': ObjectId(id)}})
         if existing_email:
             flash('Cet email est déjà utilisé par un autre client.', 'error')
             return render_template('user_form.html', action='edit', data=request.form, user=user)
 
-        # Vérif unicité tag (exclure le doc actuel)
         existing_tag = db.users.find_one({'id_tag': id_tag, '_id': {'$ne': ObjectId(id)}})
         if existing_tag:
             flash('Ce tag RFID est déjà assigné à un autre client.', 'error')
@@ -96,8 +98,9 @@ def edit(id):
 
     return render_template('user_form.html', action='edit', data=user, user=user)
 
-@login_required
+
 @users_bp.route('/delete/<id>', methods=['POST'])
+@login_required
 def delete(id):
     user = db.users.find_one({'_id': ObjectId(id)})
     if not user:

@@ -5,8 +5,14 @@ from bson import ObjectId
 
 tags_bp = Blueprint('tags', __name__, url_prefix='/tags')
 
-@login_required
+
+def normalize_uid(uid):
+    uid = uid.strip().upper().replace(" ", "").replace("-", "")
+    return ' '.join(uid[i:i+2] for i in range(0, len(uid), 2))
+
+
 @tags_bp.route('/')
+@login_required
 def index():
     tags = list(db.tags.find())
     for t in tags:
@@ -17,12 +23,13 @@ def index():
             t['owner'] = '—'
     return render_template('tags.html', tags=tags)
 
-@login_required
+
 @tags_bp.route('/create', methods=['GET', 'POST'])
+@login_required
 def create():
     users = list(db.users.find({'etat': 'actif'}))
     if request.method == 'POST':
-        id_tag  = request.form.get('id_tag', '').strip().upper()
+        id_tag  = normalize_uid(request.form.get('id_tag', ''))
         user_id = request.form.get('user_id', '').strip()
         etat    = request.form.get('etat', 'actif')
 
@@ -35,17 +42,18 @@ def create():
             return render_template('tag_form.html', action='create', data=request.form, users=users)
 
         db.tags.insert_one({
-            'id_tag': id_tag,
+            'id_tag':  id_tag,
             'user_id': ObjectId(user_id) if user_id else None,
-            'etat': etat,
+            'etat':    etat,
         })
         flash('Tag RFID créé avec succès.', 'success')
         return redirect(url_for('tags.index'))
 
     return render_template('tag_form.html', action='create', data={}, users=users)
 
-@login_required
+
 @tags_bp.route('/edit/<id>', methods=['GET', 'POST'])
+@login_required
 def edit(id):
     tag = db.tags.find_one({'_id': ObjectId(id)})
     if not tag:
@@ -55,7 +63,7 @@ def edit(id):
     users = list(db.users.find({'etat': 'actif'}))
 
     if request.method == 'POST':
-        id_tag  = request.form.get('id_tag', '').strip().upper()
+        id_tag  = normalize_uid(request.form.get('id_tag', ''))
         user_id = request.form.get('user_id', '').strip()
         etat    = request.form.get('etat', 'actif')
 
@@ -71,9 +79,9 @@ def edit(id):
         db.tags.update_one(
             {'_id': ObjectId(id)},
             {'$set': {
-                'id_tag': id_tag,
+                'id_tag':  id_tag,
                 'user_id': ObjectId(user_id) if user_id else None,
-                'etat': etat,
+                'etat':    etat,
             }}
         )
         flash('Tag modifié avec succès.', 'success')
@@ -81,8 +89,9 @@ def edit(id):
 
     return render_template('tag_form.html', action='edit', data=tag, tag=tag, users=users)
 
-@login_required
+
 @tags_bp.route('/delete/<id>', methods=['POST'])
+@login_required
 def delete(id):
     tag = db.tags.find_one({'_id': ObjectId(id)})
     if not tag:

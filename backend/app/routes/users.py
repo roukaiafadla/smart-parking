@@ -22,7 +22,7 @@ def create():
         email         = request.form.get('email', '').strip()
         num_telephone = request.form.get('num_telephone', '').strip()
         id_tag        = request.form.get('id_tag', '').strip().upper()
-        id_tag        = ' '.join(id_tag.split())  # normalise les espaces
+        id_tag        = ' '.join(id_tag.split())
         etat          = request.form.get('etat', 'actif')
 
         if not all([nom, prenom, email, num_telephone, id_tag]):
@@ -37,7 +37,8 @@ def create():
             flash('Ce tag RFID est déjà assigné.', 'error')
             return render_template('user_form.html', action='create', data=request.form)
 
-        db.users.insert_one({
+        # Créer le client
+        result = db.users.insert_one({
             'nom': nom,
             'prenom': prenom,
             'email': email,
@@ -45,6 +46,15 @@ def create():
             'id_tag': id_tag,
             'etat': etat,
         })
+
+        # Ajouter automatiquement le tag dans la collection tags
+        if not db.tags.find_one({'id_tag': id_tag}):
+            db.tags.insert_one({
+                'id_tag': id_tag,
+                'user_id': result.inserted_id,
+                'etat': etat,
+            })
+
         flash('Client créé avec succès.', 'success')
         return redirect(url_for('users.index'))
 
@@ -65,7 +75,7 @@ def edit(id):
         email         = request.form.get('email', '').strip()
         num_telephone = request.form.get('num_telephone', '').strip()
         id_tag        = request.form.get('id_tag', '').strip().upper()
-        id_tag        = ' '.join(id_tag.split())  # normalise les espaces
+        id_tag        = ' '.join(id_tag.split())
         etat          = request.form.get('etat', 'actif')
 
         if not all([nom, prenom, email, num_telephone, id_tag]):
@@ -93,6 +103,14 @@ def edit(id):
                 'etat': etat,
             }}
         )
+
+        # Mettre à jour le tag dans la collection tags
+        db.tags.update_one(
+            {'user_id': ObjectId(id)},
+            {'$set': {'id_tag': id_tag, 'etat': etat}},
+            upsert=True
+        )
+
         flash('Client modifié avec succès.', 'success')
         return redirect(url_for('users.index'))
 
@@ -107,6 +125,9 @@ def delete(id):
         flash('Client introuvable.', 'error')
         return redirect(url_for('users.index'))
 
+    # Supprimer aussi le tag associé
+    db.tags.delete_one({'user_id': ObjectId(id)})
     db.users.delete_one({'_id': ObjectId(id)})
-    flash('Client supprimé.', 'success')
+
+    flash('Client et tag associé supprimés.', 'success')
     return redirect(url_for('users.index'))

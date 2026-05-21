@@ -24,8 +24,8 @@ def create():
         id_tag        = request.form.get('id_tag', '').strip().upper()
         id_tag        = ' '.join(id_tag.split())
         etat          = request.form.get('etat', 'actif')
-
-        if not all([nom, prenom, email, num_telephone, id_tag]):
+        matricule     = request.form.get('matricule', '').strip().upper()
+        if not all([nom, prenom, email, num_telephone, id_tag, etat, matricule]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='create', data=request.form)
 
@@ -45,6 +45,7 @@ def create():
             'num_telephone': num_telephone,
             'id_tag': id_tag,
             'etat': etat,
+            'matricule': matricule,
         })
 
         # Ajouter automatiquement le tag dans la collection tags
@@ -54,9 +55,18 @@ def create():
                 'user_id': result.inserted_id,
                 'etat': etat,
             })
-
+        # Ajouter automatiquement le voiture dans la collection  vehicules
+        if not db.vehicules.find_one({'matricule': matricule}):
+            db.vehicules.insert_one({
+                'matricule': matricule,
+                'user_id': result.inserted_id,
+                
+                
+            })
         flash('Client créé avec succès.', 'success')
         return redirect(url_for('users.index'))
+        
+
 
     return render_template('user_form.html', action='create', data={})
 
@@ -77,8 +87,8 @@ def edit(id):
         id_tag        = request.form.get('id_tag', '').strip().upper()
         id_tag        = ' '.join(id_tag.split())
         etat          = request.form.get('etat', 'actif')
-
-        if not all([nom, prenom, email, num_telephone, id_tag]):
+        matricule     = request.form.get('matricule', '').strip().upper()
+        if not all([nom, prenom, email, num_telephone, id_tag, etat, matricule]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='edit', data=request.form, user=user)
 
@@ -91,7 +101,10 @@ def edit(id):
         if existing_tag:
             flash('Ce tag RFID est déjà assigné à un autre client.', 'error')
             return render_template('user_form.html', action='edit', data=request.form, user=user)
-
+        existing_matricule = db.users.find_one({'matricule': matricule, '_id': {'$ne': ObjectId(id)}})
+        if existing_matricule:
+            flash('Ce matricule est déjà utilisé par un autre client.', 'error')
+            return render_template('user_form.html', action='edit', data=request.form, user=user)
         db.users.update_one(
             {'_id': ObjectId(id)},
             {'$set': {
@@ -101,6 +114,7 @@ def edit(id):
                 'num_telephone': num_telephone,
                 'id_tag': id_tag,
                 'etat': etat,
+                'matricule': matricule,
             }}
         )
 

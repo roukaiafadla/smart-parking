@@ -5,7 +5,29 @@
 {% block breadcrumb %}Vue d'ensemble du système{% endblock %}
 
 {% block content %}
-
+<script>
+function ouvrirBarriere() {
+    fetch("{{ url_for('access_api.open_barrier') }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"}
+    })
+    .then(r => r.json())
+    .then(data => {
+        const msg = document.getElementById("barrier-msg");
+        msg.style.display = "block";
+        msg.style.color = data.status === "ok" ? "#3ecf8e" : "#f97316";
+        msg.textContent = data.message;
+        setTimeout(() => msg.style.display = "none", 3000);
+    })
+    .catch(() => {
+        const msg = document.getElementById("barrier-msg");
+        msg.style.display = "block";
+        msg.style.color = "#ef4444";
+        msg.textContent = "Erreur de connexion";
+        setTimeout(() => msg.style.display = "none", 3000);
+    });
+}
+</script>
 <!-- STATS GRID -->
 <div class="stats-grid">
 
@@ -128,6 +150,17 @@
     <div class="right-col">
 
         <!-- TAG STATUS DONUT -->
+         <!-- BARRIER CONTROL -->
+<button onclick="ouvrirBarriere()" class="quick-btn" style="background:#f97316;color:white;border:none;cursor:pointer;width:100%;text-align:left;display:flex;align-items:center;gap:8px;padding:0.75rem 1rem;border-radius:8px;font-size:0.875rem;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+    Ouvrir la barrière
+</button>
+
+<div id="barrier-msg" style="font-size:0.8rem;margin-top:4px;display:none;"></div>
+
+
         <div class="panel animate-in" style="--delay: 380ms">
             <div class="panel-header">
                 <h2 class="panel-title">État des Tags</h2>

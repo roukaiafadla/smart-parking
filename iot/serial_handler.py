@@ -7,18 +7,18 @@ from email.mime.text import MIMEText
 from pymongo import MongoClient
 from datetime import datetime
 from queue import Queue
-
+import os
 # ================= CONFIG =================
 SERIAL_PORT = "COM3"
 BAUD_RATE   = 9600
 FLASK_URL   = "http://127.0.0.1:5000/access/api/access"
-ALERT_SSE_URL = "http://127.0.0.1:5000/alertes/api/push"   # ← nouvel endpoint
+ALERT_SSE_URL = "http://127.0.0.1:5000/alertes/api/push"
 
 MONGO_URI = "mongodb://localhost:27017"
 DB_NAME   = "smart_parking"
 
-EMAIL_EXPEDITEUR = "fadlaroukaia238@gmail.com"
-EMAIL_MOT_PASSE  = "wxdt vrtr wyjp omzj"
+EMAIL_EXPEDITEUR = "smartparkingesi@gmail.com"
+EMAIL_MOT_PASSE  = "dfrh hiye ljeg igel"
 SMTP_HOST        = "smtp.gmail.com"
 SMTP_PORT        = 587
 
@@ -27,7 +27,7 @@ print(f"En écoute sur {SERIAL_PORT}...")
 
 ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=10)
 time.sleep(2)
-
+ 
 # ================= DB =================
 def get_db():
     client = MongoClient(MONGO_URI)
@@ -112,10 +112,20 @@ def normaliser_uid(raw):
     if " " not in uid_clean:
         return ' '.join(uid_clean[i:i+2] for i in range(0, len(uid_clean), 2))
     return ' '.join(uid_clean.split())
+  
 
+def verifier_commande_barriere():
+    if os.path.exists("barrier_command.txt"):
+        with open("barrier_command.txt", "r") as f:
+            cmd = f.read().strip()
+        os.remove("barrier_command.txt")
+        if cmd == "OPEN_BARRIER":
+            ser.write(b"OPEN_BARRIER\n")
+            print("[ADMIN] Commande ouverture barrière envoyée")
 # ================= LOOP =================
 try:
     while True:
+        verifier_commande_barriere() 
         if ser.in_waiting > 0:
             data = ser.readline().decode('utf-8').strip()
             if not data:

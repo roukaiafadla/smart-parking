@@ -26,7 +26,8 @@ def create_app():
     from .routes.auth import auth_bp
     from .routes.alertes import alertes_bp
     from .routes.access import access_api
-    
+    from .routes.access_entree import access_entree_bp
+
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(vehicles_bp)
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(alertes_bp)
     app.register_blueprint(access_api)
-    
+    app.register_blueprint(access_entree_bp)
+
 
     return app

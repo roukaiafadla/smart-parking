@@ -20,7 +20,7 @@
                     <th>Date / Heure</th>
                     <th>Tag RFID</th>
                     <th>Nom</th>
-                    <th>Utilisateur ID</th>
+                    
                     <th>Type</th>
                     <th>Statut</th>
                 </tr>
@@ -41,13 +41,7 @@
                             <span style="color: var(--text-muted); font-style: italic;">Inconnu</span>
                         {% endif %}
                     </td>
-                    <td>
-                        {% if log.user_id %}
-                            <span style="font-size: 0.85rem;">{{ log.user_id }}</span>
-                        {% else %}
-                            <span style="color: var(--text-muted); font-style: italic;">N/A</span>
-                        {% endif %}
-                    </td>
+                
                     <td>
                         <span class="badge badge-info">
                             {{ log.type|default('entree')|upper }}

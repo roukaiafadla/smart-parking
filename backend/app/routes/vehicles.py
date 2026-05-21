@@ -28,7 +28,7 @@ def create():
         marque    = request.form.get('marque', '').strip()
         modele    = request.form.get('modele', '').strip()
         couleur   = request.form.get('couleur', '').strip()
-
+        
         if not matricule:
             flash('Le matricule est obligatoire.', 'error')
             return render_template('vehicle_form.html', action='create', data=request.form, users=users)

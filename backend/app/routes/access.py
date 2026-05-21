@@ -15,6 +15,19 @@ def index():
 
 
 # --- ROUTE POUR LE RASPBERRY PI ---
+@access_api.route("/api/open_barrier", methods=["POST"])
+@login_required
+def open_barrier():
+    try:
+        # Write command to a file that the bridge reads
+        with open("barrier_command.txt", "w") as f:
+            f.write("OPEN_BARRIER")
+        return jsonify({"status": "ok", "message": "Commande envoyée"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    
+
+    
 @access_api.route("/api/access", methods=["POST"])
 def check_access():
     data = request.json
@@ -37,7 +50,7 @@ def check_access():
             "nom": nom,
             "timestamp": datetime.now(),
             "statut": "autorisé",
-            "type": "entree"
+            "type": "sortie"
         })
         return jsonify({"status": "valid", "message": f"Accès autorisé — {nom}"})
 
@@ -48,6 +61,6 @@ def check_access():
             "nom": "Inconnu",
             "timestamp": datetime.now(),
             "statut": "refusé",
-            "type": "entree"
+            "type": "sortie"
         })
         return jsonify({"status": "error", "message": "Accès refusé"})

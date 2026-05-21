@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 from app import db
+from app.normalization import normalize_matricule, normalize_uid
 from bson import ObjectId
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -21,10 +22,9 @@ def create():
         prenom        = request.form.get('prenom', '').strip()
         email         = request.form.get('email', '').strip()
         num_telephone = request.form.get('num_telephone', '').strip()
-        id_tag        = request.form.get('id_tag', '').strip().upper()
-        id_tag        = ' '.join(id_tag.split())
+        id_tag        = normalize_uid(request.form.get('id_tag', ''))
         etat          = request.form.get('etat', 'actif')
-        matricule     = request.form.get('matricule', '').strip().upper()
+        matricule     = normalize_matricule(request.form.get('matricule', ''))
         if not all([nom, prenom, email, num_telephone, id_tag, etat, matricule]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='create', data=request.form)
@@ -84,10 +84,9 @@ def edit(id):
         prenom        = request.form.get('prenom', '').strip()
         email         = request.form.get('email', '').strip()
         num_telephone = request.form.get('num_telephone', '').strip()
-        id_tag        = request.form.get('id_tag', '').strip().upper()
-        id_tag        = ' '.join(id_tag.split())
+        id_tag        = normalize_uid(request.form.get('id_tag', ''))
         etat          = request.form.get('etat', 'actif')
-        matricule     = request.form.get('matricule', '').strip().upper()
+        matricule     = normalize_matricule(request.form.get('matricule', ''))
         if not all([nom, prenom, email, num_telephone, id_tag, etat, matricule]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='edit', data=request.form, user=user)

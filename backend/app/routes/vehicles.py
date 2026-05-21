@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 from app import db
+from app.normalization import normalize_matricule
 from bson import ObjectId
 
 vehicles_bp = Blueprint('vehicles', __name__, url_prefix='/vehicles')
@@ -23,7 +24,7 @@ def index():
 def create():
     users = list(db.users.find({'etat': 'actif'}))
     if request.method == 'POST':
-        matricule = request.form.get('matricule', '').strip().upper()
+        matricule = normalize_matricule(request.form.get('matricule', ''))
         user_id   = request.form.get('user_id', '').strip()
         marque    = request.form.get('marque', '').strip()
         modele    = request.form.get('modele', '').strip()
@@ -60,7 +61,7 @@ def edit(id):
     users = list(db.users.find({'etat': 'actif'}))
 
     if request.method == 'POST':
-        matricule = request.form.get('matricule', '').strip().upper()
+        matricule = normalize_matricule(request.form.get('matricule', ''))
         user_id   = request.form.get('user_id', '').strip()
         marque    = request.form.get('marque', '').strip()
         modele    = request.form.get('modele', '').strip()

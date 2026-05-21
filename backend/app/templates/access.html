@@ -20,7 +20,7 @@
                     <th>Date / Heure</th>
                     <th>Tag RFID</th>
                     <th>Nom</th>
-                    
+                    <th>Matricule</th>
                     <th>Type</th>
                     <th>Statut</th>
                 </tr>
@@ -41,7 +41,13 @@
                             <span style="color: var(--text-muted); font-style: italic;">Inconnu</span>
                         {% endif %}
                     </td>
-                
+                    <td>
+                        {% if log.matricule %}
+                            <code class="tag-code">{{ log.matricule }}</code>
+                        {% else %}
+                            <span style="color: var(--text-muted);">--</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="badge badge-info">
                             {{ log.type|default('entree')|upper }}

@@ -1,14 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 from app import db
+from app.normalization import normalize_uid
 from bson import ObjectId
 
 tags_bp = Blueprint('tags', __name__, url_prefix='/tags')
-
-
-def normalize_uid(uid):
-    uid = uid.strip().upper().replace(" ", "").replace("-", "")
-    return ' '.join(uid[i:i+2] for i in range(0, len(uid), 2))
 
 
 @tags_bp.route('/')

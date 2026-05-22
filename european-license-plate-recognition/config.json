@@ -1,0 +1,25 @@
+{
+  "model_type": "YOLOv12n",
+  "task": "license_plate_detection",
+  "input_size": [
+    640,
+    640
+  ],
+  "num_classes": 1,
+  "class_names": [
+    "license_plate"
+  ],
+  "framework": "Ultralytics YOLOv12",
+  "export_formats": [],
+  "security_compliant": true,
+  "performance_metrics": {
+    "detection_rate": 1.0,
+    "text_extraction_rate": 0.06666666666666667,
+    "average_processing_time_seconds": 0.13999562263488768,
+    "frames_per_second": 7.143080484795061,
+    "min_processing_time": 0.13301992416381836,
+    "max_processing_time": 0.174299955368042,
+    "std_processing_time": 0.0076016026253408015
+  },
+  "created_date": "2025-09-08T19:06:22.642321"
+}

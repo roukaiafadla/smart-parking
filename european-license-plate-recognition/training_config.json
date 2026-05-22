@@ -1,0 +1,17 @@
+{
+  "model_type": "YOLOv12n",
+  "epochs": 100,
+  "image_size": 640,
+  "batch_size": 4,
+  "patience": 10,
+  "data_yaml": "yolo_dataset/data.yaml",
+  "training_date": "2025-09-08T15:24:48.994625",
+  "device": "cpu",
+  "train_images": 1105,
+  "val_images": 277,
+  "gpu_info": {
+    "cuda_available": false,
+    "device_name": "CPU",
+    "memory_gb": "N/A"
+  }
+}

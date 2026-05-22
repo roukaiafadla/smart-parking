@@ -1,0 +1,14 @@
+{
+  "final_metrics": {
+    "map50": 0.995,
+    "map50_95": 0.9949999999999999,
+    "precision": 0.9998091285998877,
+    "recall": 1.0
+  },
+  "training_completed": "2025-09-08T18:15:07.208461",
+  "epochs_completed": 100,
+  "device_used": "cpu",
+  "batch_size_used": 4,
+  "workers_used": 4,
+  "training_successful": true
+}

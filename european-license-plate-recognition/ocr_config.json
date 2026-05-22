@@ -1,0 +1,30 @@
+{
+  "library": "EasyOCR",
+  "supported_languages": [
+    "en",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "nl"
+  ],
+  "language_descriptions": {
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish",
+    "it": "Italian",
+    "nl": "Dutch"
+  },
+  "gpu_enabled": false,
+  "version": "1.7.2",
+  "device_info": {
+    "cuda_available": false,
+    "gpu_enabled": false,
+    "device_count": 0,
+    "current_device": "cpu",
+    "device_name": "CPU"
+  },
+  "configuration_date": "2025-09-08T19:04:55.612495",
+  "initialization_successful": true
+}

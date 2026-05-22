@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Accès en direct{% endblock %}
+{% block page_title %}Accès en direct{% endblock %}
+{% block breadcrumb %}Historique des entrées / sorties{% endblock %}
+
+{% block content %}
+<div class="panel animate-in">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">Journal d'accès</h2>
+            <p class="panel-sub">Les 50 derniers événements enregistrés par le système</p>
+        </div>
+        <span class="badge-live" style="padding: 4px 10px; font-size:0.7rem;">LIVE</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date / Heure</th>
+                    <th>Tag RFID</th>
+                    <th>Nom</th>
+                    <th>Matricule</th>
+                    <th>Type</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>
+                        <span style="font-family:var(--font-mono); font-size:0.78rem; color:var(--text-muted);">
+                            {{ log.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}
+                        </span>
+                    </td>
+                    <td><code class="tag-code">{{ log.id_tag }}</code></td>
+                    <td>
+                        {% if log.nom %}
+                            <span style="font-size: 0.85rem;">{{ log.nom }}</span>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">Inconnu</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.matricule %}
+                            <code class="tag-code">{{ log.matricule }}</code>
+                        {% else %}
+                            <span style="color: var(--text-muted);">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-info">
+                            {{ log.type|default('entree')|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        {# Correspondance avec 'valid' ou 'invalid' inséré par access.py #}
+                        <span class="badge {% if log.statut == 'autorisé' %}badge-success{% else %}badge-danger{% endif %}">
+                            {% if log.statut == 'autorisé' %}
+                                ✅ ACCORDÉ
+                            {% else %}
+                                ❌ REFUSÉ
+                            {% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-row">Aucun accès enregistré dans la base de données</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    /* Petits ajustements pour la lisibilité */
+    .tag-code {
+        background: var(--bg-subtle);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        color: var(--primary);
+    }
+    .badge-info {
+        background: #e1f5fe;
+        color: #0288d1;
+    }
+</style>
+{% endblock %}

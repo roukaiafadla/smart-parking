@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Alertes incendie{% endblock %}
+{% block page_title %}Alertes incendie{% endblock %}
+{% block breadcrumb %}Système de sécurité{% endblock %}
+{% block content %}
+
+{% if actives > 0 %}
+<div class="alert-banner animate-in" id="fire-banner">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span id="banner-text">{{ actives }} alerte(s) active(s) — intervention requise</span>
+</div>
+{% else %}
+<div class="alert-banner animate-in" id="fire-banner" style="display:none">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span id="banner-text"></span>
+</div>
+{% endif %}
+
+<div class="panel animate-in" style="--delay: 80ms">
+    <div class="panel-header">
+        <div>
+            <h2 class="panel-title">Journal des alertes</h2>
+            <p class="panel-sub">Historique complet des détections</p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span class="badge badge-danger" id="active-count">{{ actives }} actives</span>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date / Heure</th>
+                    <th>Message</th>
+                    <th>Niveau</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="alertes-tbody">
+                {% for a in alertes %}
+                <tr>
+                    <td>
+                        <span style="font-family:var(--font-mono); font-size:0.78rem; color:var(--text-muted);">
+                            {{ a.timestamp.strftime('%d/%m/%Y %H:%M') }}
+                        </span>
+                    </td>
+                    <td>{{ a.message }}</td>
+                    <td>
+                        <span class="badge {% if a.niveau == 'critique' %}badge-danger{% else %}badge-warning{% endif %}">
+                            {{ a.niveau }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if a.statut == 'active' %}badge-danger{% else %}badge-success{% endif %}">
+                            {{ a.statut }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if a.statut == 'active' %}
+                        <form method="POST" action="{{ url_for('alertes.resolve', id=a._id) }}">
+                            <button type="submit" class="btn btn-secondary" style="padding: 6px 12px; font-size:0.78rem;">
+                                Marquer résolue
+                            </button>
+                        </form>
+                        {% else %}
+                        <span style="color:var(--text-muted); font-size:0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr id="empty-row"><td colspan="5" class="empty-row">Aucune alerte enregistrée</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+(function () {
+  let activeCount = { actives } ;
+
+  function updateBanner(count) {
+    const banner = document.getElementById('fire-banner');
+    const text   = document.getElementById('banner-text');
+    const badge  = document.getElementById('active-count');
+    if (count > 0) {
+      text.textContent = count + ' alerte(s) active(s) — intervention requise';
+      badge.textContent = count + ' actives';
+      banner.style.display = '';
+    } else {
+      banner.style.display = 'none';
+      badge.textContent = '0 actives';
+    }
+  }
+
+  function prependRow(evt) {
+    // Supprimer la ligne "aucune alerte" si présente
+    const empty = document.getElementById('empty-row');
+    if (empty) empty.remove();
+
+    const tbody = document.getElementById('alertes-tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-muted)">${evt.timestamp}</span></td>
+      <td>${evt.message}</td>
+      <td><span class="badge badge-danger">critique</span></td>
+      <td><span class="badge badge-danger">active</span></td>
+      <td>
+        <form method="POST" action="/alertes/resolve/${evt.id}">
+          <button type="submit" class="btn btn-secondary" style="padding:6px 12px;font-size:.78rem">
+            Marquer résolue
+          </button>
+        </form>
+      </td>`;
+    tbody.prepend(tr);
+  }
+
+  const evtSource = new EventSource("{{ url_for('alertes.stream') }}");
+
+  evtSource.onmessage = function (e) {
+    let data;
+    try { data = JSON.parse(e.data); } catch { return; }
+
+    if (data.type === 'FIRE_ALERT') {
+      activeCount++;
+      updateBanner(activeCount);
+      prependRow(data);
+    }
+
+    if (data.type === 'FIRE_CLEAR') {
+      activeCount = 0;
+      updateBanner(0);
+      // Mettre à jour visuellement les badges "active" → "résolue"
+      document.querySelectorAll('#alertes-tbody .badge-danger').forEach(b => {
+        if (b.textContent.trim() === 'active') {
+          b.classList.replace('badge-danger', 'badge-success');
+          b.textContent = 'résolue';
+        }
+      });
+    }
+  };
+
+  evtSource.onerror = function () {
+    // Reconnexion automatique gérée par le navigateur
+    console.warn('[SSE] Reconnexion...');
+  };
+})();
+</script>
+{% endblock %}

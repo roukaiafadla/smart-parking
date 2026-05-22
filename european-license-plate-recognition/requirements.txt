@@ -1,0 +1,12 @@
+ultralytics
+easyocr
+opencv-python
+torch
+torchvision
+pillow
+numpy
+matplotlib
+huggingface-hub
+onnx
+onnxruntime
+requests

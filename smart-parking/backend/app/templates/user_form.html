@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'edit' %}Modifier client{% else %}Nouveau client{% endif %}{% endblock %}
+{% block page_title %}{% if action == 'edit' %}Modifier client{% else %}Nouveau client{% endif %}{% endblock %}
+{% block breadcrumb %}Clients → {% if action == 'edit' %}Modification{% else %}Création{% endif %}{% endblock %}
+
+{% block content %}
+<div class="panel animate-in" style="max-width: 600px; margin: 0 auto;">
+    <div class="panel-header">
+        <h2 class="panel-title">
+            {% if action == 'edit' %}Modifier — {{ user.prenom }} {{ user.nom }}
+            {% else %}Nouveau client{% endif %}
+        </h2>
+    </div>
+    <div style="padding: 24px;">
+        <form method="POST">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="nom" class="form-control"
+                           value="{{ data.get('nom', '') }}" placeholder="Fadla" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" name="prenom" class="form-control"
+                           value="{{ data.get('prenom', '') }}" placeholder="Roukaia" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control"
+                       value="{{ data.get('email', '') }}" placeholder="exemple@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Numéro de téléphone</label>
+                <input type="text" name="num_telephone" class="form-control"
+                       value="{{ data.get('num_telephone', '') }}" placeholder="06XXXXXXXX" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tag RFID</label>
+                <input type="text" name="id_tag" class="form-control"
+                       value="{{ data.get('id_tag', '') }}" placeholder="ex: 37 6B B0 4E A2" required>
+            </div>
+                <div class="form-group">
+                <label class="form-label">Matricule</label>
+                <input type="text" name="matricule" class="form-control"
+                       value="{{ data.get('matricule', '') }}" placeholder="ex: 123456" required>
+            </div>
+
+
+            <div class="form-group">
+                <label class="form-label">Statut</label>
+                <select name="etat" class="form-control">
+                    <option value="actif"    {% if data.get('etat') == 'actif'    %}selected{% endif %}>Actif</option>
+                    <option value="inactif"  {% if data.get('etat') == 'inactif'  %}selected{% endif %}>Inactif</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <button type="submit" class="btn btn-primary">
+                    {% if action == 'edit' %}Enregistrer les modifications{% else %}Créer le client{% endif %}
+                </button>
+                <a href="{{ url_for('users.index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

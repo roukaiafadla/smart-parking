@@ -1,0 +1,9 @@
+# Lightweight Raspberry Pi dependencies for remote OCR mode.
+# The AI/OCR dependencies are installed on the PC backend, not on the Pi.
+requests
+RPLCD
+mfrc522
+RPi.GPIO
+
+# Install Picamera2 on Raspberry Pi OS with:
+# sudo apt install -y python3-picamera2

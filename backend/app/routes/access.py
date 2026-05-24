@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template
 from app import db
+from app.normalization import normalize_uid
 from datetime import datetime
 from flask_login import login_required
 
@@ -35,9 +36,7 @@ def check_access():
     if not data or not data.get("uid"):
         return jsonify({"status": "error", "message": "UID manquant"}), 400
 
-    # Normalisation du UID — majuscules + espaces propres
-    uid = data.get("uid", "").strip().upper()
-    uid = ' '.join(uid.split())
+    uid = normalize_uid(data.get("uid", ""))
 
     # Chercher directement dans users par id_tag
     user = db.users.find_one({"id_tag": uid, "etat": "actif"})

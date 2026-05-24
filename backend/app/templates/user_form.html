@@ -19,12 +19,12 @@
                 <div class="form-group">
                     <label class="form-label">Nom</label>
                     <input type="text" name="nom" class="form-control"
-                           value="{{ data.get('nom', '') }}" placeholder="Fadla" required>
+                           value="{{ data.get('nom', '') }}" placeholder="Nom de famille" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Prénom</label>
                     <input type="text" name="prenom" class="form-control"
-                           value="{{ data.get('prenom', '') }}" placeholder="Roukaia" required>
+                           value="{{ data.get('prenom', '') }}" placeholder="Prénom" required>
                 </div>
             </div>
 
@@ -37,26 +37,40 @@
             <div class="form-group">
                 <label class="form-label">Numéro de téléphone</label>
                 <input type="text" name="num_telephone" class="form-control"
-                       value="{{ data.get('num_telephone', '') }}" placeholder="06XXXXXXXX" required>
+                       value="{{ data.get('num_telephone', '') }}" placeholder="0600000000" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Tag RFID</label>
                 <input type="text" name="id_tag" class="form-control"
-                       value="{{ data.get('id_tag', '') }}" placeholder="ex: 37 6B B0 4E A2" required>
-            </div>
-                <div class="form-group">
-                <label class="form-label">Matricule</label>
-                <input type="text" name="matricule" class="form-control"
-                       value="{{ data.get('matricule', '') }}" placeholder="ex: 123456" required>
+                       value="{{ data.get('id_tag', '') }}" placeholder="ex: 20 B7 5F 4D" required>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">
+                    Matricule du véhicule
+                    {% if action == 'edit' %}
+                    <span style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono);">
+                        — véhicule principal
+                    </span>
+                    {% endif %}
+                </label>
+                <input type="text" name="matricule" class="form-control"
+                       value="{% if action == 'edit' and vehicule %}{{ vehicule.matricule }}{% else %}{{ data.get('matricule', '') }}{% endif %}"
+                       placeholder="ex: 123456789">
+                {% if action == 'edit' %}
+                <small style="color:var(--text-muted); font-size:0.72rem;">
+                    Pour ajouter d'autres véhicules, utilisez la page
+                    <a href="{{ url_for('vehicles.index') }}" style="color:var(--accent-blue);">Véhicules</a>.
+                </small>
+                {% endif %}
+            </div>
 
             <div class="form-group">
                 <label class="form-label">Statut</label>
                 <select name="etat" class="form-control">
-                    <option value="actif"    {% if data.get('etat') == 'actif'    %}selected{% endif %}>Actif</option>
-                    <option value="inactif"  {% if data.get('etat') == 'inactif'  %}selected{% endif %}>Inactif</option>
+                    <option value="actif"   {% if data.get('etat', 'actif') == 'actif'   %}selected{% endif %}>Actif</option>
+                    <option value="inactif" {% if data.get('etat') == 'inactif' %}selected{% endif %}>Inactif</option>
                 </select>
             </div>
 

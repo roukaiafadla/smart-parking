@@ -24,7 +24,6 @@ function animateCounter(el) {
     function tick(now) {
         const elapsed = now - start;
         const progress = Math.min(elapsed / duration, 1);
-        // ease out cubic
         const eased = 1 - Math.pow(1 - progress, 3);
         el.textContent = Math.floor(eased * target);
         if (progress < 1) requestAnimationFrame(tick);
@@ -34,7 +33,6 @@ function animateCounter(el) {
 }
 
 document.querySelectorAll('.stat-value[data-target]').forEach(el => {
-    // trigger when element is visible
     const obs = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -56,3 +54,35 @@ document.querySelectorAll('.alert').forEach(el => {
     }, 3500);
 });
 
+// --- AUTO REFRESH ---
+// Uniquement sur dashboard et access — jamais sur les pages avec formulaires
+const pagesAvecFormulaire = [
+    '/users/create', '/users/edit',
+    '/vehicles/create', '/vehicles/edit',
+    '/tags/create', '/tags/edit',
+    '/auth/login',
+];
+
+const currentPath = window.location.pathname;
+const hasForm = pagesAvecFormulaire.some(p => currentPath.includes(p));
+
+if (!hasForm) {
+    const pagesAutoRefresh = ['/', '/dashboard', '/access/', '/alertes/'];
+    const shouldRefresh = pagesAutoRefresh.some(p => currentPath.includes(p));
+    if (shouldRefresh) {
+        setInterval(() => {
+            fetch(window.location.href)
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newBody = doc.querySelector('.content-body');
+                    const currentBody = document.querySelector('.content-body');
+                    if (newBody && currentBody) {
+                        currentBody.innerHTML = newBody.innerHTML;
+                    }
+                })
+                .catch(() => {});
+        }, 10000);
+    }
+}

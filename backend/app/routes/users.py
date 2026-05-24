@@ -25,7 +25,8 @@ def create():
         id_tag        = normalize_uid(request.form.get('id_tag', ''))
         etat          = request.form.get('etat', 'actif')
         matricule     = normalize_matricule(request.form.get('matricule', ''))
-        if not all([nom, prenom, email, num_telephone, id_tag, etat, matricule]):
+
+        if not all([nom, prenom, email, num_telephone, id_tag, etat]):
             flash('Tous les champs sont obligatoires.', 'error')
             return render_template('user_form.html', action='create', data=request.form)
 
@@ -37,7 +38,12 @@ def create():
             flash('Ce tag RFID est déjà assigné.', 'error')
             return render_template('user_form.html', action='create', data=request.form)
 
-        # Créer le client
+        # Vérifier unicité matricule dans vehicules (si fourni)
+        if matricule and db.vehicules.find_one({'matricule': matricule}):
+            flash('Ce matricule est déjà enregistré.', 'error')
+            return render_template('user_form.html', action='create', data=request.form)
+
+        # Créer le client — sans matricule dans users
         result = db.users.insert_one({
             'nom': nom,
             'prenom': prenom,
@@ -45,28 +51,28 @@ def create():
             'num_telephone': num_telephone,
             'id_tag': id_tag,
             'etat': etat,
-            'matricule': matricule,
         })
 
-        # Ajouter automatiquement le tag dans la collection tags
+        # Ajouter automatiquement le tag dans tags
         if not db.tags.find_one({'id_tag': id_tag}):
             db.tags.insert_one({
                 'id_tag': id_tag,
                 'user_id': result.inserted_id,
                 'etat': etat,
             })
-        # Ajouter automatiquement le voiture dans la collection  vehicules
-        if not db.vehicules.find_one({'matricule': matricule}):
+
+        # Ajouter automatiquement le véhicule dans vehicules (si matricule fourni)
+        if matricule:
             db.vehicules.insert_one({
                 'matricule': matricule,
                 'user_id': result.inserted_id,
-                
-                
+                'marque': '',
+                'modele': '',
+                'couleur': '',
             })
+
         flash('Client créé avec succès.', 'success')
         return redirect(url_for('users.index'))
-        
-
 
     return render_template('user_form.html', action='create', data={})
 
@@ -79,6 +85,9 @@ def edit(id):
         flash('Client introuvable.', 'error')
         return redirect(url_for('users.index'))
 
+    # Récupérer le premier véhicule du client pour pré-remplir
+    vehicule = db.vehicules.find_one({'user_id': ObjectId(id)})
+
     if request.method == 'POST':
         nom           = request.form.get('nom', '').strip()
         prenom        = request.form.get('prenom', '').strip()
@@ -87,23 +96,32 @@ def edit(id):
         id_tag        = normalize_uid(request.form.get('id_tag', ''))
         etat          = request.form.get('etat', 'actif')
         matricule     = normalize_matricule(request.form.get('matricule', ''))
-        if not all([nom, prenom, email, num_telephone, id_tag, etat, matricule]):
+
+        if not all([nom, prenom, email, num_telephone, id_tag, etat]):
             flash('Tous les champs sont obligatoires.', 'error')
-            return render_template('user_form.html', action='edit', data=request.form, user=user)
+            return render_template('user_form.html', action='edit', data=request.form, user=user, vehicule=vehicule)
 
         existing_email = db.users.find_one({'email': email, '_id': {'$ne': ObjectId(id)}})
         if existing_email:
             flash('Cet email est déjà utilisé par un autre client.', 'error')
-            return render_template('user_form.html', action='edit', data=request.form, user=user)
+            return render_template('user_form.html', action='edit', data=request.form, user=user, vehicule=vehicule)
 
         existing_tag = db.users.find_one({'id_tag': id_tag, '_id': {'$ne': ObjectId(id)}})
         if existing_tag:
             flash('Ce tag RFID est déjà assigné à un autre client.', 'error')
-            return render_template('user_form.html', action='edit', data=request.form, user=user)
-        existing_matricule = db.users.find_one({'matricule': matricule, '_id': {'$ne': ObjectId(id)}})
-        if existing_matricule:
-            flash('Ce matricule est déjà utilisé par un autre client.', 'error')
-            return render_template('user_form.html', action='edit', data=request.form, user=user)
+            return render_template('user_form.html', action='edit', data=request.form, user=user, vehicule=vehicule)
+
+        # Vérifier unicité matricule dans vehicules (exclure celui du client actuel)
+        if matricule:
+            existing_matricule = db.vehicules.find_one({
+                'matricule': matricule,
+                'user_id': {'$ne': ObjectId(id)}
+            })
+            if existing_matricule:
+                flash('Ce matricule est déjà utilisé par un autre client.', 'error')
+                return render_template('user_form.html', action='edit', data=request.form, user=user, vehicule=vehicule)
+
+        # Mettre à jour le client
         db.users.update_one(
             {'_id': ObjectId(id)},
             {'$set': {
@@ -113,21 +131,36 @@ def edit(id):
                 'num_telephone': num_telephone,
                 'id_tag': id_tag,
                 'etat': etat,
-                'matricule': matricule,
             }}
         )
 
-        # Mettre à jour le tag dans la collection tags
+        # Mettre à jour le tag dans tags
         db.tags.update_one(
             {'user_id': ObjectId(id)},
             {'$set': {'id_tag': id_tag, 'etat': etat}},
             upsert=True
         )
 
+        # Mettre à jour ou créer le véhicule
+        if matricule:
+            if vehicule:
+                db.vehicules.update_one(
+                    {'_id': vehicule['_id']},
+                    {'$set': {'matricule': matricule}}
+                )
+            else:
+                db.vehicules.insert_one({
+                    'matricule': matricule,
+                    'user_id': ObjectId(id),
+                    'marque': '',
+                    'modele': '',
+                    'couleur': '',
+                })
+
         flash('Client modifié avec succès.', 'success')
         return redirect(url_for('users.index'))
 
-    return render_template('user_form.html', action='edit', data=user, user=user)
+    return render_template('user_form.html', action='edit', data=user, user=user, vehicule=vehicule)
 
 
 @users_bp.route('/delete/<id>', methods=['POST'])
@@ -138,9 +171,10 @@ def delete(id):
         flash('Client introuvable.', 'error')
         return redirect(url_for('users.index'))
 
-    # Supprimer aussi le tag associé
+    # Supprimer tag, tous les véhicules, et le client
     db.tags.delete_one({'user_id': ObjectId(id)})
+    db.vehicules.delete_many({'user_id': ObjectId(id)})
     db.users.delete_one({'_id': ObjectId(id)})
 
-    flash('Client et tag associé supprimés.', 'success')
+    flash('Client, tag et véhicules associés supprimés.', 'success')
     return redirect(url_for('users.index'))

@@ -37,11 +37,24 @@ def create():
             flash('Ce tag existe déjà.', 'error')
             return render_template('tag_form.html', action='create', data=request.form, users=users)
 
+        # Vérifier que ce user n'a pas déjà un tag
+        if user_id and db.tags.find_one({'user_id': ObjectId(user_id)}):
+            flash('Ce client a déjà un tag RFID assigné.', 'error')
+            return render_template('tag_form.html', action='create', data=request.form, users=users)
+
         db.tags.insert_one({
             'id_tag':  id_tag,
             'user_id': ObjectId(user_id) if user_id else None,
             'etat':    etat,
         })
+
+        # Sync — mettre à jour id_tag dans users
+        if user_id:
+            db.users.update_one(
+                {'_id': ObjectId(user_id)},
+                {'$set': {'id_tag': id_tag, 'etat': etat}}
+            )
+
         flash('Tag RFID créé avec succès.', 'success')
         return redirect(url_for('tags.index'))
 
@@ -72,6 +85,18 @@ def edit(id):
             flash('Ce tag est déjà utilisé.', 'error')
             return render_template('tag_form.html', action='edit', data=request.form, tag=tag, users=users)
 
+        # Vérifier qu'un autre user n'a pas déjà un tag (exclure le tag actuel)
+        if user_id:
+            existing_user_tag = db.tags.find_one({
+                'user_id': ObjectId(user_id),
+                '_id': {'$ne': ObjectId(id)}
+            })
+            if existing_user_tag:
+                flash('Ce client a déjà un tag RFID assigné.', 'error')
+                return render_template('tag_form.html', action='edit', data=request.form, tag=tag, users=users)
+
+        old_user_id = tag.get('user_id')
+
         db.tags.update_one(
             {'_id': ObjectId(id)},
             {'$set': {
@@ -80,6 +105,21 @@ def edit(id):
                 'etat':    etat,
             }}
         )
+
+        # Sync — mettre à jour id_tag dans l'ancien user (si changement de propriétaire)
+        if old_user_id and str(old_user_id) != user_id:
+            db.users.update_one(
+                {'_id': old_user_id},
+                {'$set': {'id_tag': ''}}
+            )
+
+        # Sync — mettre à jour id_tag dans le nouveau user
+        if user_id:
+            db.users.update_one(
+                {'_id': ObjectId(user_id)},
+                {'$set': {'id_tag': id_tag, 'etat': etat}}
+            )
+
         flash('Tag modifié avec succès.', 'success')
         return redirect(url_for('tags.index'))
 
@@ -93,6 +133,13 @@ def delete(id):
     if not tag:
         flash('Tag introuvable.', 'error')
         return redirect(url_for('tags.index'))
+
+    # Sync — vider id_tag dans users
+    if tag.get('user_id'):
+        db.users.update_one(
+            {'_id': tag['user_id']},
+            {'$set': {'id_tag': ''}}
+        )
 
     db.tags.delete_one({'_id': ObjectId(id)})
     flash('Tag supprimé.', 'success')

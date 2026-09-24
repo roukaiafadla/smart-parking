@@ -1,6 +1,6 @@
 # 🅿️ Smart Parking System
 
-An intelligent, RFID + AI-powered access control system for parking lots — built as a 3CS end-of-year project at **ESI-SBA**.
+An intelligent, RFID + AI-powered access control system for parking lots — built as a 2CS end-of-year project at **ESI-SBA**.
 
 The system replaces manual/unsecured parking access with a **double-verification entry** (RFID badge + automatic license plate recognition), **automated RFID exit control**, and **real-time fire/smoke detection** with automatic email alerts.
 

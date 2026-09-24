@@ -112,7 +112,7 @@ Full RFID and OCR test scenarios (valid client, inactive client, unknown badge, 
 
 ## 👥 Team
 
-Built as a 3CS project at **ESI-SBA**, supervised by **Mr. Abdellatif Rahmoun**.
+Built as a 2CS project at **ESI-SBA**, supervised by **Mr. Abdellatif Rahmoun**.
 
 Team: Fadla Roukaia · Esma Bouhouche · Amro Dennai · Lilya Bensaha
 

@@ -104,7 +104,6 @@ Full RFID and OCR test scenarios (valid client, inactive client, unknown badge, 
 ## 🔭 Roadmap
 
 - [ ] API authentication (keys) + HTTPS/TLS + bcrypt password hashing
-- [ ] Retrain YOLOv12 on Algerian/Maghreb plate formats
 - [ ] Replace Arduino + serial bridge with ESP32 (WiFi-native)
 - [ ] Mobile app for clients to view their own access history
 - [ ] Dockerized cloud deployment for multi-camera, higher-traffic parking lots

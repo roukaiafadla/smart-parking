@@ -35,6 +35,7 @@ License plate recognition uses a **two-stage cascaded pipeline**, chosen specifi
 
 ## 🏗️ Architecture
 
+![System architecture](./screenshots/architecture-diagram.png)
 
 ![Entry system prototype](./screenshots/entry-prototype.jpg)
 ![Exit system prototype](./screenshots/exit-prototype.jpg)
